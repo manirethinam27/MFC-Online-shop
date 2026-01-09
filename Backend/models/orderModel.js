@@ -11,7 +11,7 @@ const orderSchema = new mongoose.Schema({
   ],
   totalAmount: { type: Number, default: 0 },
   paymentMethod: { type: String, required: true },
-  paymentStatus: { type: String, default: 'Pending' },
+  paymentStatus: { type: String },
   pickupVerified: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now }
 }, { collection: 'order' });
