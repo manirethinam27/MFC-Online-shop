@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 
 const orderSchema = new mongoose.Schema({
-  orderId: { type: String, default: () => 'order' + Date.now() },
+  orderId: { type: String, default: () => 'order' + Math.floor(Math.random() * 10000) },
   items: [
     {
       name: { type: String, required: true },

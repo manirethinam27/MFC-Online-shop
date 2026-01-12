@@ -7,6 +7,7 @@ import samosaImg from "../assets/samosa.png";
 import vegImg from "../assets/veg-buff.png";
 import logoImg from "../assets/logo-mfc.png";
 import { useCart } from "../context/CartContext";
+import { toast } from "react-toastify";
 
 const images = {
   chicken: chickenImg,
@@ -32,7 +33,7 @@ function getImageByName(name) {
 
 const FoodCard = ({ name, price, qty = 1 }) => {
   const [ordercount, setCount] = useState(1);
-  const { addToCart } = useCart(); // ✅ CORRECT PLACE
+  const { addToCart } = useCart();
 
   return (
     <div
@@ -81,7 +82,9 @@ const FoodCard = ({ name, price, qty = 1 }) => {
               qty: ordercount,
               image: getImageByName(name),
             })
+            
           }
+          
         >
           Add to Cart – ₹{price * ordercount}
         </button>

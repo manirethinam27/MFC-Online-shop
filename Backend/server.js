@@ -12,7 +12,8 @@ const PORT = process.env.PORT || 3000;
 
 connectDB();
 
-const AllowedOrigins = [process.env.FRONTEND_URL || "http://localhost:5173"];
+const AllowedOrigins = [process.env.FRONTEND_URL || "http://localhost:5173",
+                        process.env.DASHBOARD_URL || "http://localhost:8080"];
 
 app.use(express.json());
 app.use(cors({ credentials: true, origin: AllowedOrigins }));

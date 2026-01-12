@@ -11,8 +11,3 @@
   --text-dark: #222222;
   --text-muted: #777777;
 }
-
-body {
-  background-color: var(--bg-light);
-  color: var(--text-dark);
-}

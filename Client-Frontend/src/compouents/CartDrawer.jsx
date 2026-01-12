@@ -26,18 +26,23 @@ const placeOrder = async () => {
     paymentMethod: paymentMethod
   };
 
-  await axios.post(
-    `${import.meta.env.VITE_BACKEND_URL}/orders/createorder`,
-    orderData,
-    {
-      headers: {
-        "Content-Type": "application/json"
+  try {
+    await axios.post(
+      `${import.meta.env.VITE_BACKEND_URL}/orders/createorder`,
+      orderData,
+      {
+        headers: {
+          "Content-Type": "application/json"
+        }
       }
-    }
-  );
-  setIsCartOpen(false);
-  clearCart();
-  alert("Order placed successfully!");
+    );
+    setIsCartOpen(false);
+    clearCart();
+    alert("Order placed successfully!");
+  } catch (error) {
+    console.error('Order failed:', error?.response?.data || error.message);
+    alert(`Order failed: ${error?.response?.data?.message || error.message}`);
+  }
 };
 
 

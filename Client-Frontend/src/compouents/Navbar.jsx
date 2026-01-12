@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { useCart } from "../context/CartContext";
 
 const Navbar = () => {
-  const { cartItems, setIsCartOpen } = useCart(); // ✅ INSIDE component
+  const { cartItems, setIsCartOpen } = useCart();
 
   return (
     <motion.div
@@ -27,7 +27,7 @@ const Navbar = () => {
 
       {/* Cart */}
       <motion.div
-        onClick={() => setIsCartOpen(true)} // ✅ open drawer
+        onClick={() => setIsCartOpen(true)}
         whileHover={{ scale: 1.15 }}
         whileTap={{ scale: 0.9 }}
         className="relative cursor-pointer text-gray-800 text-xl"
