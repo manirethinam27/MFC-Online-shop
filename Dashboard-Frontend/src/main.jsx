@@ -2,13 +2,14 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import App from "./App";
+import { CartProvider } from "./context/appContext.jsx";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <BrowserRouter>
-      <appContext.Provider value={{}}>
+      <CartProvider>
         <App />
-      </appContext.Provider>
+      </CartProvider>
     </BrowserRouter>
   </React.StrictMode>
 );

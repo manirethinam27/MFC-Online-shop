@@ -40,10 +40,12 @@ export const createOrder = async (req, res) => {
     }
 
     // 3️⃣ Save order
+    const paymentStatus = paymentMethod === "online" ? "Paid" : "Pending";
     const newOrder = new ordermodel({
       items,
       paymentMethod,
       pickupVerified: false,
+      paymentStatus,
     });
 
     await newOrder.save();
@@ -95,8 +97,15 @@ export const updatePaid = async (req, res) => {
         message:"Order already paid"
       });
     }
+
     order.paymentStatus = 'Paid';
     await order.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Order marked as Paid",
+      data: order,
+    });
   }
   catch (error) {
     res.status(500).json({

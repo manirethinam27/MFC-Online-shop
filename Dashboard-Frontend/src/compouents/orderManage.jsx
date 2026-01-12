@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { useAppContext } from "../context/appContext.jsx";
 
 const OrderManage = () => {
 
   const [orders, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { setOrders: setContextOrders, setProfit: setContextProfit,setPendingOrders } = useAppContext();
 
   useEffect(() => {
     const fetchItems = async () => {
@@ -27,6 +29,8 @@ const OrderManage = () => {
     fetchItems();
   }, []);
 
+  
+
   const markAsPaid = async (orderId) => {
     try {
       const res = await axios.put(
@@ -34,6 +38,8 @@ const OrderManage = () => {
         {},
         { withCredentials: true }
       );
+
+      console.log(res.data.message);
 
       setItems((prev) =>
         prev.map((o) =>
@@ -89,11 +95,20 @@ const OrderManage = () => {
 };
 
 
-const totalOrders = orders.length;
-const totalProfit = orders.reduce((acc, order) => acc + order.totalAmount, 0);
+  useEffect(() => {
+    const paidOrders = orders.filter(
+      (order) => order.paymentStatus === "Paid"
+    );
 
-
-
+    const totalProfit = paidOrders.reduce(
+      (acc, order) => acc + (order.totalAmount ?? 0),
+      0
+    );
+    const unpaidOrders = orders.length-paidOrders.length;
+    setContextOrders(orders);
+    setContextProfit(totalProfit);
+    setPendingOrders(unpaidOrders);
+  }, [orders, setContextOrders, setContextProfit, setPendingOrders]);
     return(
         <>
         <h1 className="text-xl font-semibold mb-4">Order Management</h1>
@@ -114,45 +129,85 @@ const totalProfit = orders.reduce((acc, order) => acc + order.totalAmount, 0);
             </thead>
 
             <tbody className="divide-y divide-red-300">
-              {orders.map((item) => (
-                <tr className=" hover:bg-gray-100" key={item._id}>
+            {loading ? (
+              <tr>
+                <td colSpan="8" className="px-4 py-3 text-center">
+                  Loading...
+                </td>
+              </tr>
+            ) : orders.length === 0 ? (
+              <tr>
+                <td colSpan="8" className="px-4 py-3 text-center">
+                  No orders found.
+                </td>
+              </tr>
+            ) : (
+              orders.map((item) => (
+                <tr className="hover:bg-gray-100" key={item._id}>
                   <td className="px-4 py-2">{item.orderId}</td>
 
                   <td className="px-4 py-2">
-                      <ul className="text-sm space-y-1">
-                        {item.items.map((product, index) => (
-                          <li key={index}>
-                            {product.name} × {product.qty}
-                          </li>
-                        ))}
-                      </ul>
+                    <ul className="text-sm space-y-1">
+                      {item.items.map((product, index) => (
+                        <li key={index}>
+                          {product.name} × {product.qty}
+                        </li>
+                      ))}
+                    </ul>
                   </td>
 
                   <td className="px-4 py-2 font-semibold">₹{item.totalAmount}</td>
                   <td className="px-4 py-2">{item.paymentMethod}</td>
 
                   <td className="px-4 py-2">
-                      <span className={`px-2 py-1 text-xs rounded ${item.paymentStatus === 'Paid' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                       {item.paymentStatus}
-                      </span>
+                    <span
+                      className={`px-2 py-1 text-xs rounded ${
+                        item.paymentStatus === "Paid"
+                          ? "bg-green-100 text-green-700"
+                          : "bg-red-100 text-red-700"
+                      }`}
+                    >
+                      {item.paymentStatus}
+                    </span>
                   </td>
 
-                  <td className="px-4 py-2">{item.pickupVerified===false ? "Pending" : "Picked Up"}</td>
-                  <td className="px-4 py-2 text-sm text-gray-500">{timeAgo(item.createdAt)}</td>
-                  {item.pickupVerified===false ? (
                   <td className="px-4 py-2">
-                    {item.paymentStatus === 'Paid' ? (
-                      <button className="px-2 py-1 text-xs bg-blue-500 text-white rounded" onClick={() => markAsPickupVerify(item._id)}>verify</button>
+                    {item.pickupVerified ? "Picked Up" : "Pending"}
+                  </td>
+
+                  <td className="px-4 py-2 text-sm text-gray-500">
+                    {timeAgo(item.createdAt)}
+                  </td>
+
+                  <td className="px-4 py-2">
+                    {!item.pickupVerified ? (
+                      item.paymentStatus === "Paid" ? (
+                        <button
+                          type="button"
+                          className="px-2 py-1 text-xs bg-blue-500 text-white rounded"
+                          onClick={() => markAsPickupVerify(item._id)}
+                        >
+                          verify
+                        </button>
+
+                      ) : (
+                        <button
+                          type="button"
+                          className="px-2 py-1 text-xs bg-green-500 text-white rounded"
+                          onClick={() => markAsPaid(item._id)}
+                        >
+                          pay
+                        </button>
+                      )
                     ) : (
-                      <button className="px-2 py-1 text-xs bg-green-500 text-white rounded" onClick={() => markAsPaid(item._id)}>pay</button>
+                      <span className="text-green-600 font-semibold">Verified</span>
                     )}
                   </td>
-                  ):(
-                    <td className="px-4 py-2 text-green-600 font-semibold">Verified</td>
-                  )}
                 </tr>
-              ))}
-            </tbody>
+              ))
+            )}
+          </tbody>
+
           </table>
         </div>
 

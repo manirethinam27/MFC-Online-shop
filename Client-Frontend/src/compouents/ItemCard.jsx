@@ -7,7 +7,6 @@ import samosaImg from "../assets/samosa.png";
 import vegImg from "../assets/veg-buff.png";
 import logoImg from "../assets/logo-mfc.png";
 import { useCart } from "../context/CartContext";
-import { toast } from "react-toastify";
 
 const images = {
   chicken: chickenImg,

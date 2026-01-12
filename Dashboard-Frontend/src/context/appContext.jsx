@@ -4,19 +4,25 @@ import { createContext, useContext, useState } from "react";
 const appContext = createContext(null);
 
 export const CartProvider = ({ children }) => {
-  const [orders, setOrders] = useState([]);
-  const [profit, setProfit] = useState(0);
+  const [orderstotal, setOrders] = useState([]);
+  const [profittotal, setProfit] = useState(0);
+  const [pendingOrders, setPendingOrders] = useState(0);
 
   return (
     <appContext.Provider
       value={{
-        orders,
+        orders: orderstotal,
         setOrders,
-        profit,
-        setProfit
+        profit: profittotal,
+        setProfit,
+        pending: pendingOrders,
+        setPendingOrders,
       }}
-    ></appContext.Provider>
-    );
+    >
+      {children}
+    </appContext.Provider>
+  );
 };
 
 export const useAppContext = () => useContext(appContext);
+export default appContext;

@@ -23,12 +23,6 @@ orderSchema.pre('validate', function () {
       0
     );
   }
-
-  if (this.paymentMethod === 'online') {
-    this.paymentStatus = 'Paid';
-  } else {
-    this.paymentStatus = 'Pending';
-  }
 });
 
 const orderModel = mongoose.models.Order || mongoose.model('Order', orderSchema);
