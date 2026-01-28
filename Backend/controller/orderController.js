@@ -12,7 +12,7 @@ export const createOrder = async (req, res) => {
   }
 
   try {
-    // 1️⃣ Check stock
+    /* ================= 1️⃣ CHECK STOCK ================= */
     for (const orderItem of items) {
       const item = await itemsmodel.findOne({ name: orderItem.name });
 
@@ -31,7 +31,7 @@ export const createOrder = async (req, res) => {
       }
     }
 
-    // 2️⃣ Reduce stock
+    /* ================= 2️⃣ REDUCE STOCK ================= */
     for (const orderItem of items) {
       await itemsmodel.findOneAndUpdate(
         { name: orderItem.name },
@@ -39,20 +39,34 @@ export const createOrder = async (req, res) => {
       );
     }
 
-    // 3️⃣ Save order
+    /* ================= 3️⃣ GENERATE ORDER ID ================= */
+    const now = new Date();
+    const orderId = `MFC-${now.getFullYear()}${String(
+      now.getMonth() + 1
+    ).padStart(2, "0")}${String(now.getDate()).padStart(2, "0")}-${Math.floor(
+      1000 + Math.random() * 9000
+    )}`;
+
+    /* ================= 4️⃣ SAVE ORDER ================= */
     const paymentStatus = paymentMethod === "online" ? "Paid" : "Pending";
+
     const newOrder = new ordermodel({
+      orderId,
       items,
       paymentMethod,
-      pickupVerified: false,
       paymentStatus,
+      pickupVerified: false,
     });
 
     await newOrder.save();
 
+    /* ================= 5️⃣ RESPONSE ================= */
     res.status(201).json({
       success: true,
       message: "Order Created",
+      orderId: newOrder.orderId, 
+      mongodb: newOrder._id,  
+      paymentStatus: paymentStatus,
     });
 
   } catch (error) {
@@ -63,6 +77,7 @@ export const createOrder = async (req, res) => {
     });
   }
 };
+
 
 
 /* ================= GET ALL ORDERS ================= */
@@ -83,7 +98,7 @@ export const updatePaid = async (req, res) => {
   const { orderId } = req.params;
 
   try{
-    const order = await ordermodel.findById(orderId);
+    const order = await ordermodel.findOne({ orderId });
 
     if(!order){
       return res.status(404).json({
@@ -114,13 +129,12 @@ export const updatePaid = async (req, res) => {
       error: error.message,
     });
   }
-};
-/* ================= VERIFY PICKUP ================= */
+};/* ================= VERIFY PICKUP ================= */
 export const verifyPickup = async (req, res) => {
   const { orderId } = req.params;
 
   try {
-    const order = await ordermodel.findById(orderId);
+    const order = await ordermodel.findOne({ orderId });
 
     if (!order) {
       return res.status(404).json({
@@ -129,21 +143,39 @@ export const verifyPickup = async (req, res) => {
       });
     }
 
+    // optional safety checks
+    if (order.pickupVerified) {
+      return res.status(400).json({
+        success: false,
+        message: "Order already collected",
+      });
+    }
+
+    if (order.paymentStatus !== "Paid") {
+      return res.status(400).json({
+        success: false,
+        message: "Payment not completed",
+      });
+    }
+
     order.pickupVerified = true;
+    order.pickedUpAt = new Date();
     await order.save();
 
     res.status(200).json({
       success: true,
-      message: "Pickup verified",
+      message: "Pickup verified successfully",
+      orderId: order.orderId,
     });
   } catch (error) {
+    console.error("Verify pickup error:", error);
     res.status(500).json({
       success: false,
       message: "Server Error",
-      error: error.message,
     });
   }
 };
+
 
 /* ================= CANCEL ORDER ================= */
 export const cancelOrder = async (req, res) => {

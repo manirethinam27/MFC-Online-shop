@@ -7,6 +7,16 @@ import samosaImg from "../assets/samosa.png";
 import vegImg from "../assets/veg-buff.png";
 import logoImg from "../assets/logo-mfc.png";
 import { useCart } from "../context/CartContext";
+import bourbonImg from "../assets/bourbon.png";
+import cutletImg from "../assets/cutlet.png";
+import laysblueImg from "../assets/lays-blue.png";
+import laysredImg from "../assets/lays-red.png";
+import laysyellowImg from "../assets/lays-yellow.png";
+import popconeImg from "../assets/popcone.png";
+import stingImg from "../assets/sting.png";
+import treatImg from "../assets/treat.png";
+import vegrollImg from "../assets/veg-roll.png";
+
 
 const images = {
   chicken: chickenImg,
@@ -15,6 +25,15 @@ const images = {
   paneer: paneerImg,
   samosa: samosaImg,
   veg: vegImg,
+  bourbon: bourbonImg,
+  cutlet: cutletImg,
+  laysblue: laysblueImg,
+  laysred: laysredImg,
+  laysyellow: laysyellowImg,
+  popcone: popconeImg,
+  sting: stingImg,
+  treat: treatImg,
+  vegroll: vegrollImg,
   default: logoImg,
 };
 
@@ -27,6 +46,15 @@ function getImageByName(name) {
   if (n.includes("paneer") || n.includes("panneer")) return images.paneer;
   if (n.includes("samosa")) return images.samosa;
   if (n.includes("veg") || n.includes("vegetable")) return images.veg;
+  if (n.includes("bourbon")) return images.bourbon;
+  if (n.includes("cutlet")) return images.cutlet;
+  if (n.includes("lays-blue")) return images.laysblue;
+  if (n.includes("lays-red")) return images.laysred;
+  if (n.includes("lays-yellow")) return images.laysyellow;
+  if (n.includes("popcone")) return images.popcone;
+  if (n.includes("sting")) return images.sting;
+  if (n.includes("treat")) return images.treat;
+  if (n.includes("veg roll")) return images.vegroll;
   return images.default;
 }
 

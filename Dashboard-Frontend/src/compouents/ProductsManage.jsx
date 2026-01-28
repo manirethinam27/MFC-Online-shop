@@ -280,7 +280,7 @@ const ProductsManage = () => {
                 filteredItems.map((item) => (
                   <tr key={item._id}>
                     <td className="px-4 py-3 text-sm">{item.name}</td>
-                    <td className="px-4 py-3 text-sm">${item.price}</td>
+                    <td className="px-4 py-3 text-sm">₹{item.price}</td>
                     <td className="px-4 py-3 text-sm">{item.qty}</td>
                     <td className="px-4 py-3 text-sm">
                       <button onClick={() => { setCurrentItem(item); setShowEdit(true); }} className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600">

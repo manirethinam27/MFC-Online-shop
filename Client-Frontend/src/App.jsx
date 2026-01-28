@@ -1,19 +1,20 @@
-import './index.css'
-import { Routes, Route } from 'react-router-dom'
-import { ToastContainer } from 'react-toastify'
-import 'react-toastify/dist/ReactToastify.css';
-import Home from './pages/Home.jsx'
+import { Routes, Route } from "react-router-dom";
+import Home from "./pages/Home";
+import OrderQR from "./pages/QRPage";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const App = () => {
   return (
-    <div>
-      <ToastContainer />
+    <>
       <Routes>
         <Route path="/" element={<Home />} />
-       
+        <Route path="/order-qr" element={<OrderQR />} />
       </Routes>
-    </div>
-  )
-}
+
+      <ToastContainer />
+    </>
+  );
+};
 
 export default App;

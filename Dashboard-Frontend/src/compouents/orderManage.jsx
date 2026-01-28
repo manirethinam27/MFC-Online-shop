@@ -3,45 +3,40 @@ import axios from "axios";
 import { useAppContext } from "../context/appContext.jsx";
 
 const OrderManage = () => {
-
-  const [orders, setItems] = useState([]);
+  const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { setOrders: setContextOrders, setProfit: setContextProfit,setPendingOrders } = useAppContext();
+  const { setOrders: setContextOrders, setProfit: setContextProfit, setPendingOrders } = useAppContext();
 
+  // Fetch orders
   useEffect(() => {
-    const fetchItems = async () => {
+    const fetchOrders = async () => {
       try {
         const res = await axios.get(
           `${import.meta.env.VITE_BACKEND_URL}/orders/getorders`,
           { withCredentials: true }
         );
-
-
-        setItems(res.data.data);
-      } catch (error) {
-        console.error("Error fetching items:", error);
-        setItems([]);
+        setOrders(res.data.data);
+      } catch (err) {
+        console.error("Error fetching orders:", err);
+        setOrders([]);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchItems();
+    fetchOrders();
   }, []);
 
-  
-
+  // Mark as Paid
   const markAsPaid = async (orderId) => {
     try {
-      const res = await axios.put(
+      await axios.put(
         `${import.meta.env.VITE_BACKEND_URL}/orders/updatePaid/${orderId}`,
         {},
         { withCredentials: true }
       );
 
-      console.log(res.data.message);
-
-      setItems((prev) =>
+      setOrders((prev) =>
         prev.map((o) =>
           o._id === orderId ? { ...o, paymentStatus: "Paid" } : o
         )
@@ -51,98 +46,88 @@ const OrderManage = () => {
     }
   };
 
+  // Mark Pickup Verified
   const markAsPickupVerify = async (orderId) => {
-  try {
-    const res = await axios.put(
-      `${import.meta.env.VITE_BACKEND_URL}/orders/verifypickup/${orderId}`,
-      {},
-      { withCredentials: true }
-    );
+    try {
+      await axios.put(
+        `${import.meta.env.VITE_BACKEND_URL}/orders/verifypickup/${orderId}`,
+        {},
+        { withCredentials: true }
+      );
 
-    setItems((prev) =>
-      prev.map((o) =>
-        o._id === orderId ? { ...o, pickupVerified: true } : o
-      )
-    );
-  } catch (err) {
-    console.error(err.response?.data?.message);
-  }
-};
+      setOrders((prev) =>
+        prev.map((o) =>
+          o._id === orderId ? { ...o, pickupVerified: true } : o
+        )
+      );
+    } catch (err) {
+      console.error(err.response?.data?.message);
+    }
+  };
 
+  // Filter pending orders
+  const pendingOrders = orders.filter((order) => !order.pickupVerified);
 
-
+  // Calculate time ago
   const timeAgo = (date) => {
-  const now = new Date();
-  const past = new Date(date);
-  const diffInSeconds = Math.floor((now - past) / 1000);
+    const now = new Date();
+    const past = new Date(date);
+    const diffInSeconds = Math.floor((now - past) / 1000);
 
-  if (diffInSeconds < 60) {
-    return `${diffInSeconds} sec ago`;
-  }
+    if (diffInSeconds < 60) return `${diffInSeconds} sec ago`;
+    const diffInMinutes = Math.floor(diffInSeconds / 60);
+    if (diffInMinutes < 60) return `${diffInMinutes} min ago`;
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    if (diffInHours < 24) return `${diffInHours} hr ago`;
+    const diffInDays = Math.floor(diffInHours / 24);
+    return `${diffInDays} day${diffInDays > 1 ? "s" : ""} ago`;
+  };
 
-  const diffInMinutes = Math.floor(diffInSeconds / 60);
-  if (diffInMinutes < 60) {
-    return `${diffInMinutes} min ago`;
-  }
-
-  const diffInHours = Math.floor(diffInMinutes / 60);
-  if (diffInHours < 24) {
-    return `${diffInHours} hr ago`;
-  }
-
-  const diffInDays = Math.floor(diffInHours / 24);
-  return `${diffInDays} days ago`;
-};
-
-
+  // Update context values
   useEffect(() => {
-    const paidOrders = orders.filter(
-      (order) => order.paymentStatus === "Paid"
-    );
+    const paidOrders = orders.filter((order) => order.paymentStatus === "Paid");
+    const totalProfit = paidOrders.reduce((acc, order) => acc + (order.totalAmount ?? 0), 0);
+    const unpaidOrders = orders.filter((order) => !order.pickupVerified).length;
 
-    const totalProfit = paidOrders.reduce(
-      (acc, order) => acc + (order.totalAmount ?? 0),
-      0
-    );
-    const unpaidOrders = orders.length-paidOrders.length;
-    setContextOrders(orders);
+    setContextOrders(orders.length);
     setContextProfit(totalProfit);
     setPendingOrders(unpaidOrders);
   }, [orders, setContextOrders, setContextProfit, setPendingOrders]);
-    return(
-        <>
-        <h1 className="text-xl font-semibold mb-4">Order Management</h1>
 
-        <div className="overflow-x-auto bg-white rounded-lg shadow">
-          <table className="min-w-full border border-red-300">
-            <thead className="bg-red-300 text-[var(--primary)] font-bold">
-              <tr>
-                <th className="px-4 py-3 text-left text-sm font-semibold ">Order ID</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold ">Items</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold ">Total</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold ">Payment</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold ">Status</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold ">Pickup</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold ">Time</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold ">Action</th>
-              </tr>
-            </thead>
+  return (
+    <>
+      <h1 className="text-xl font-semibold mb-4">Order Management</h1>
 
-            <tbody className="divide-y divide-red-300">
+      <div className="overflow-x-auto bg-white rounded-lg shadow">
+        <table className="min-w-full border border-red-300">
+          <thead className="bg-red-300 text-[var(--primary)] font-bold">
+            <tr>
+              <th className="px-4 py-3 text-left text-sm font-semibold">Order ID</th>
+              <th className="px-4 py-3 text-left text-sm font-semibold">Items</th>
+              <th className="px-4 py-3 text-left text-sm font-semibold">Total</th>
+              <th className="px-4 py-3 text-left text-sm font-semibold">Payment</th>
+              <th className="px-4 py-3 text-left text-sm font-semibold">Status</th>
+              <th className="px-4 py-3 text-left text-sm font-semibold">Pickup</th>
+              <th className="px-4 py-3 text-left text-sm font-semibold">Time</th>
+              <th className="px-4 py-3 text-left text-sm font-semibold">Action</th>
+            </tr>
+          </thead>
+
+          <tbody className="divide-y divide-red-300">
             {loading ? (
               <tr>
-                <td colSpan="8" className="px-4 py-3 text-center">
-                  Loading...
-                </td>
+                <td colSpan="8" className="px-4 py-3 text-center">Loading...</td>
               </tr>
             ) : orders.length === 0 ? (
               <tr>
-                <td colSpan="8" className="px-4 py-3 text-center">
-                  No orders found.
-                </td>
+                <td colSpan="8" className="px-4 py-3 text-center">No orders found.</td>
+              </tr>
+            ) : pendingOrders.length === 0 ? (
+              <tr>
+                <td colSpan="8" className="px-4 py-3 text-center">No pending orders.</td>
               </tr>
             ) : (
-              orders.map((item) => (
+              pendingOrders.map((item) => (
                 <tr className="hover:bg-gray-100" key={item._id}>
                   <td className="px-4 py-2">{item.orderId}</td>
 
@@ -171,13 +156,8 @@ const OrderManage = () => {
                     </span>
                   </td>
 
-                  <td className="px-4 py-2">
-                    {item.pickupVerified ? "Picked Up" : "Pending"}
-                  </td>
-
-                  <td className="px-4 py-2 text-sm text-gray-500">
-                    {timeAgo(item.createdAt)}
-                  </td>
+                  <td className="px-4 py-2">{item.pickupVerified ? "Picked Up" : "Pending"}</td>
+                  <td className="px-4 py-2 text-sm text-gray-500">{timeAgo(item.createdAt)}</td>
 
                   <td className="px-4 py-2">
                     {!item.pickupVerified ? (
@@ -185,18 +165,17 @@ const OrderManage = () => {
                         <button
                           type="button"
                           className="px-2 py-1 text-xs bg-blue-500 text-white rounded"
-                          onClick={() => markAsPickupVerify(item._id)}
+                          onClick={() => markAsPickupVerify(item.orderId)}
                         >
-                          verify
+                          Verify
                         </button>
-
                       ) : (
                         <button
                           type="button"
                           className="px-2 py-1 text-xs bg-green-500 text-white rounded"
-                          onClick={() => markAsPaid(item._id)}
+                          onClick={() => markAsPaid(item.orderId)}
                         >
-                          pay
+                          Pay
                         </button>
                       )
                     ) : (
@@ -207,12 +186,10 @@ const OrderManage = () => {
               ))
             )}
           </tbody>
-
-          </table>
-        </div>
-
-        </>
-    );
-}
+        </table>
+      </div>
+    </>
+  );
+};
 
 export default OrderManage;
